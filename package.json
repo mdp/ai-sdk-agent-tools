@@ -1,0 +1,54 @@
+{
+  "name": "ai-sdk-tools-file-editing",
+  "version": "1.0.0",
+  "description": "Generic file editing tools for Vercel AI SDK v6 agents",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai-sdk",
+    "vercel",
+    "ai",
+    "tools",
+    "file-editing",
+    "agents",
+    "llm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mdp/ai-sdk-tools-file-editing"
+  },
+  "bugs": {
+    "url": "https://github.com/mdp/ai-sdk-tools-file-editing/issues"
+  },
+  "homepage": "https://github.com/mdp/ai-sdk-tools-file-editing#readme",
+  "peerDependencies": {
+    "ai": "^6.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ai": "^6.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "zod": "^3.22.0"
+  }
+}

@@ -1,0 +1,64 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Required for npm OIDC trusted publishing
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+          # Do NOT set NODE_AUTH_TOKEN - OIDC requires it to be unset
+
+      - name: Update npm to latest (required for OIDC)
+        run: npm install -g npm@latest
+
+      - name: Verify npm version supports OIDC
+        run: |
+          NPM_VERSION=$(npm --version)
+          echo "npm version: $NPM_VERSION"
+          # OIDC requires npm 11.5.1+
+          MAJOR=$(echo $NPM_VERSION | cut -d. -f1)
+          MINOR=$(echo $NPM_VERSION | cut -d. -f2)
+          if [ "$MAJOR" -lt 11 ] || ([ "$MAJOR" -eq 11 ] && [ "$MINOR" -lt 5 ]); then
+            echo "Error: npm 11.5.1+ required for OIDC publishing"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          test -f dist/index.js || (echo "Missing dist/index.js" && exit 1)
+          test -f dist/index.d.ts || (echo "Missing dist/index.d.ts" && exit 1)
+
+      - name: Publish to npm (OIDC)
+        run: npm publish --access public
+        # No NODE_AUTH_TOKEN needed - uses OIDC automatically
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
