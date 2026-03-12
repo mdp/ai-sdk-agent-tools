@@ -1,11 +1,11 @@
-# ai-sdk-tools-file-editing
+# @mdp/ai-sdk-tools-file-editing
 
 Generic file editing tools for [Vercel AI SDK v6](https://ai-sdk.dev) agents. Provides robust read, write, edit, and multi-edit capabilities with fuzzy matching to handle LLM imprecision.
 
 ## Installation
 
 ```bash
-npm install ai-sdk-tools-file-editing
+npm install @mdp/ai-sdk-tools-file-editing
 ```
 
 **Peer dependencies:** `ai@^6.0.0` and `zod@^3.22.0`
@@ -15,7 +15,7 @@ npm install ai-sdk-tools-file-editing
 ```typescript
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { createFileEditTools } from "ai-sdk-tools-file-editing";
+import { createFileEditTools } from "@mdp/ai-sdk-tools-file-editing";
 
 // Create all tools with shared configuration
 const tools = createFileEditTools({
@@ -38,7 +38,7 @@ const result = await generateText({
 Reads files and returns content with line numbers.
 
 ```typescript
-import { createReadTool } from "ai-sdk-tools-file-editing";
+import { createReadTool } from "@mdp/ai-sdk-tools-file-editing";
 
 const readTool = createReadTool({ baseDir: "/my/project" });
 
@@ -54,7 +54,7 @@ const readTool = createReadTool({ baseDir: "/my/project" });
 Creates new files or completely rewrites existing files.
 
 ```typescript
-import { createWriteTool } from "ai-sdk-tools-file-editing";
+import { createWriteTool } from "@mdp/ai-sdk-tools-file-editing";
 
 const writeTool = createWriteTool({ baseDir: "/my/project" });
 
@@ -68,7 +68,7 @@ const writeTool = createWriteTool({ baseDir: "/my/project" });
 Performs find-and-replace with fuzzy matching. Handles LLM whitespace/indentation imprecision.
 
 ```typescript
-import { createEditTool } from "ai-sdk-tools-file-editing";
+import { createEditTool } from "@mdp/ai-sdk-tools-file-editing";
 
 const editTool = createEditTool({ baseDir: "/my/project" });
 
@@ -86,7 +86,7 @@ const editTool = createEditTool({ baseDir: "/my/project" });
 Applies multiple edits to a single file atomically.
 
 ```typescript
-import { createMultiEditTool } from "ai-sdk-tools-file-editing";
+import { createMultiEditTool } from "@mdp/ai-sdk-tools-file-editing";
 
 const multiEditTool = createMultiEditTool({ baseDir: "/my/project" });
 
@@ -183,7 +183,7 @@ import {
   assertFileNotModified,
   withFileLock,
   createDiff,
-} from "ai-sdk-tools-file-editing";
+} from "@mdp/ai-sdk-tools-file-editing";
 
 // Fuzzy string replacement
 const newContent = replace(content, oldStr, newStr, false);
@@ -206,7 +206,7 @@ await withFileLock("/path/to/file", async () => {
 ```typescript
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { createFileEditTools } from "ai-sdk-tools-file-editing";
+import { createFileEditTools } from "@mdp/ai-sdk-tools-file-editing";
 
 async function runAgent(task: string) {
   const tools = createFileEditTools({
@@ -248,7 +248,7 @@ This package uses npm OIDC trusted publishing - no npm tokens required.
 
 **One-time setup on npmjs.com:**
 
-1. Go to https://www.npmjs.com/package/ai-sdk-tools-file-editing/settings
+1. Go to https://www.npmjs.com/package/@mdp/ai-sdk-tools-file-editing/settings
 2. Under "Trusted Publishers", add a new GitHub Actions publisher:
    - Owner: `mdp`
    - Repository: `ai-sdk-tools-file-editing`

@@ -1,5 +1,5 @@
 {
-  "name": "ai-sdk-tools-file-editing",
+  "name": "@mdp/ai-sdk-tools-file-editing",
   "version": "1.0.0",
   "description": "Generic file editing tools for Vercel AI SDK v6 agents",
   "type": "module",
@@ -34,6 +34,9 @@
   ],
   "author": "",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mdp/ai-sdk-tools-file-editing"
