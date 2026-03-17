@@ -1,11 +1,11 @@
-# @mdp/ai-sdk-tools-file-editing
+# @mdp/ai-sdk-agent-tools
 
-Generic file editing tools for [Vercel AI SDK v6](https://ai-sdk.dev) agents. Provides robust read, write, edit, and multi-edit capabilities with fuzzy matching to handle LLM imprecision.
+Comprehensive agent toolkit for [Vercel AI SDK v6](https://ai-sdk.dev). Provides file editing, filesystem (glob/grep/ls), bash execution, web fetch, todo tracking, and sub-agent task delegation tools.
 
 ## Installation
 
 ```bash
-npm install @mdp/ai-sdk-tools-file-editing
+npm install @mdp/ai-sdk-agent-tools
 ```
 
 **Peer dependencies:** `ai@^6.0.0` and `zod@^3.22.0`
@@ -15,155 +15,151 @@ npm install @mdp/ai-sdk-tools-file-editing
 ```typescript
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { createFileEditTools } from "@mdp/ai-sdk-tools-file-editing";
+import { createAgentTools } from "@mdp/ai-sdk-agent-tools";
 
-// Create all tools with shared configuration
-const tools = createFileEditTools({
+const tools = createAgentTools({
   baseDir: process.cwd(),
   sessionId: "my-session",
+  bash: {}, // opt-in
+  webFetch: {}, // opt-in
 });
 
 const result = await generateText({
   model: anthropic("claude-sonnet-4-20250514"),
   tools,
-  maxSteps: 10,
+  maxSteps: 20,
   prompt: "Read config.json and update the version to 2.0.0",
+});
+```
+
+## `createAgentTools(options?)`
+
+One-call factory that assembles every tool group. Returns a flat `Record<string, Tool>`.
+
+| Group | Default | Key | Tools created |
+| --- | --- | --- | --- |
+| File editing | **on** | `fileEdit` | `read`, `write`, `edit`, `multiEdit` |
+| Filesystem | **on** | `fs` | `list`, `glob`, `grep` |
+| Todo | **on** | `todo` | `todoRead`, `todoWrite` |
+| Bash | **off** | `bash` | `bash` |
+| Web fetch | **off** | `webFetch` | `webFetch` |
+| Task (sub-agent) | **off** | `task` | `task` |
+
+Pass `false` to disable a default-on group. Pass an options object `{}` to enable an off-by-default group.
+
+```typescript
+const tools = createAgentTools({
+  baseDir: process.cwd(),
+  sessionId: "my-session",
+  fs: false, // disable filesystem tools
+  bash: { timeout: 60000 }, // enable bash with 60s timeout
+  webFetch: { allowedUrls: [/^https:\/\/api\.example\.com/] },
+  task: { model: anthropic("claude-sonnet-4-20250514") },
 });
 ```
 
 ## Tools
 
-### `createReadTool(options?)`
+### File Editing — `read`, `write`, `edit`, `multiEdit`
 
-Reads files and returns content with line numbers.
-
-```typescript
-import { createReadTool } from "@mdp/ai-sdk-tools-file-editing";
-
-const readTool = createReadTool({ baseDir: "/my/project" });
-
-// AI agent usage:
-// Input: { filePath: "src/index.ts" }
-// Output: File content with line numbers:
-//    1| import { foo } from './foo';
-//    2| export function main() { ... }
-```
-
-### `createWriteTool(options?)`
-
-Creates new files or completely rewrites existing files.
+Read files with line numbers, create/overwrite files, find-and-replace with fuzzy matching, or apply multiple edits atomically.
 
 ```typescript
-import { createWriteTool } from "@mdp/ai-sdk-tools-file-editing";
+import { createFileEditTools } from "@mdp/ai-sdk-agent-tools";
 
-const writeTool = createWriteTool({ baseDir: "/my/project" });
-
-// AI agent usage:
-// Input: { filePath: "new-file.txt", content: "Hello world" }
-// Output: "File created: /my/project/new-file.txt (1 lines)"
-```
-
-### `createEditTool(options?)`
-
-Performs find-and-replace with fuzzy matching. Handles LLM whitespace/indentation imprecision.
-
-```typescript
-import { createEditTool } from "@mdp/ai-sdk-tools-file-editing";
-
-const editTool = createEditTool({ baseDir: "/my/project" });
-
-// AI agent usage:
-// Input: {
-//   filePath: "src/config.ts",
-//   oldString: 'version: "1.0.0"',
-//   newString: 'version: "2.0.0"'
-// }
-// Output: Diff showing the change
-```
-
-### `createMultiEditTool(options?)`
-
-Applies multiple edits to a single file atomically.
-
-```typescript
-import { createMultiEditTool } from "@mdp/ai-sdk-tools-file-editing";
-
-const multiEditTool = createMultiEditTool({ baseDir: "/my/project" });
-
-// AI agent usage:
-// Input: {
-//   filePath: "src/config.ts",
-//   edits: [
-//     { oldString: 'name: "old"', newString: 'name: "new"' },
-//     { oldString: 'version: "1.0"', newString: 'version: "2.0"' }
-//   ]
-// }
-```
-
-### `createFileEditTools(options?)`
-
-Convenience function that creates all tools at once:
-
-```typescript
 const { read, write, edit, multiEdit } = createFileEditTools({
-  sessionId: "my-session",
   baseDir: "/my/project",
+  sessionId: "my-session",
+});
+```
+
+The edit tool uses cascading fuzzy-match strategies (exact, line-trimmed, whitespace-normalized, indentation-flexible, etc.) to handle LLM imprecision.
+
+### Filesystem — `list`, `glob`, `grep`
+
+Directory listing, fast glob pattern matching, and content search with regex support.
+
+```typescript
+import { createFsTools } from "@mdp/ai-sdk-agent-tools";
+
+const { list, glob, grep } = createFsTools({ baseDir: "/my/project" });
+```
+
+### Bash — `bash`
+
+Shell command execution with allowlist/blocklist filtering and optional approval callback.
+
+```typescript
+import { createBashTool } from "@mdp/ai-sdk-agent-tools";
+
+const bash = createBashTool({
+  baseDir: "/my/project",
+  timeout: 30000,
+  blockedCommands: [/rm\s+-rf/],
+  approve: async (cmd) => confirm(`Run: ${cmd}?`),
+});
+```
+
+### Web Fetch — `webFetch`
+
+Fetches URLs and returns text content with URL filtering and size limits.
+
+```typescript
+import { createWebFetchTool } from "@mdp/ai-sdk-agent-tools";
+
+const webFetch = createWebFetchTool({
+  allowedUrls: [/^https:\/\/api\.example\.com/],
+  timeout: 10000,
+  maxResponseSize: 1048576,
+});
+```
+
+### Todo — `todoRead`, `todoWrite`
+
+Session-scoped task list for the agent to track its own work.
+
+```typescript
+import { createTodoTools } from "@mdp/ai-sdk-agent-tools";
+
+const { todoRead, todoWrite } = createTodoTools({ sessionId: "my-session" });
+```
+
+### Task (Sub-agent) — `task`
+
+Delegates subtasks to a separate `generateText` call. The sub-agent receives all other enabled tools by default (without the task tool itself, to prevent recursion).
+
+```typescript
+import { createTaskTool } from "@mdp/ai-sdk-agent-tools";
+
+const task = createTaskTool({
+  model: anthropic("claude-sonnet-4-20250514"),
+  systemPrompt: "You are a helpful coding assistant.",
+  maxSteps: 20,
 });
 ```
 
 ## Options
 
 ```typescript
-interface FileEditToolsOptions {
-  /**
-   * Session ID for tracking file reads.
-   * Each session maintains its own read history.
-   * @default "default"
-   */
-  sessionId?: string;
-
-  /**
-   * Whether to enforce read-before-edit.
-   * When true, edit and write tools fail if the file wasn't read first.
-   * @default true
-   */
-  requireReadBeforeEdit?: boolean;
-
-  /**
-   * Base directory to resolve relative paths against.
-   * If not set, paths must be absolute.
-   */
+interface AgentToolsOptions {
+  /** Base directory cascaded to all tools. */
   baseDir?: string;
-
-  /**
-   * Maximum number of lines to return when reading a file.
-   * @default 2000
-   */
-  maxReadLines?: number;
-
-  /**
-   * Maximum characters per line when reading.
-   * Longer lines will be truncated.
-   * @default 2000
-   */
-  maxLineLength?: number;
+  /** Session ID cascaded to tools that support it. */
+  sessionId?: string;
+  /** File editing tools. Pass false to exclude. */
+  fileEdit?: FileEditToolsOptions | false;
+  /** Filesystem tools. Pass false to exclude. */
+  fs?: FsToolOptions | false;
+  /** Todo tools. Pass false to exclude. */
+  todo?: TodoToolOptions | false;
+  /** Bash tool. Pass options to enable (off by default). */
+  bash?: BashToolOptions;
+  /** Web fetch tool. Pass options to enable (off by default). */
+  webFetch?: WebFetchToolOptions;
+  /** Task (sub-agent) tool. Pass options with model to enable (off by default). */
+  task?: TaskToolOptions;
 }
 ```
-
-## Fuzzy Matching
-
-The edit tool uses cascading replacement strategies to handle LLM imprecision:
-
-1. **Exact match** - Direct string match
-2. **Line-trimmed** - Ignores leading/trailing whitespace per line
-3. **Block anchor** - Matches first/last lines, fuzzy middle
-4. **Whitespace normalized** - Collapses all whitespace
-5. **Indentation flexible** - Ignores indentation differences
-6. **Escape normalized** - Handles `\n`, `\t` escape sequences
-7. **Trimmed boundary** - Matches trimmed text at line boundaries
-8. **Context aware** - 50% similarity threshold matching
-
-This ensures edits work even when the LLM doesn't reproduce whitespace exactly.
 
 ## Safety Features
 
@@ -171,100 +167,18 @@ This ensures edits work even when the LLM doesn't reproduce whitespace exactly.
 - **Stale edit detection**: Fails if file was modified externally since last read
 - **File locking**: Serializes concurrent writes to the same file
 - **Atomic multi-edit**: All edits succeed or none are applied
-
-## Advanced: Using Individual Utilities
-
-```typescript
-import {
-  replace,
-  levenshtein,
-  similarity,
-  recordRead,
-  assertFileNotModified,
-  withFileLock,
-  createDiff,
-} from "@mdp/ai-sdk-tools-file-editing";
-
-// Fuzzy string replacement
-const newContent = replace(content, oldStr, newStr, false);
-
-// String similarity (0-1)
-const sim = similarity("hello", "helo"); // ~0.8
-
-// Manual file state tracking
-recordRead("session-1", "/path/to/file");
-await assertFileNotModified("session-1", "/path/to/file");
-
-// File locking for concurrent access
-await withFileLock("/path/to/file", async () => {
-  // ... exclusive access
-});
-```
-
-## Example: Complete Agent Setup
-
-```typescript
-import { generateText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
-import { createFileEditTools } from "@mdp/ai-sdk-tools-file-editing";
-
-async function runAgent(task: string) {
-  const tools = createFileEditTools({
-    baseDir: process.cwd(),
-    sessionId: crypto.randomUUID(),
-  });
-
-  const result = await generateText({
-    model: anthropic("claude-sonnet-4-20250514"),
-    system: `You are a helpful coding assistant. When editing files:
-1. Always read a file before editing it
-2. Preserve the exact indentation from the read output
-3. If edit fails with "multiple matches", include more context`,
-    tools,
-    maxSteps: 20,
-    prompt: task,
-  });
-
-  return result.text;
-}
-
-// Usage
-await runAgent("Add a new export to src/index.ts for the UserService class");
-```
+- **Bash filtering**: Allowlist/blocklist patterns and approval callbacks
+- **Web fetch filtering**: URL allowlist/blocklist and response size limits
+- **Task recursion guard**: Sub-agents don't get the task tool
 
 ## Contributing
-
-### Setup
 
 ```bash
 npm install
 npm run build
 npm run typecheck
+npm test
 ```
-
-### Publishing (Maintainers)
-
-This package uses npm OIDC trusted publishing - no npm tokens required.
-
-**One-time setup on npmjs.com:**
-
-1. Go to https://www.npmjs.com/package/@mdp/ai-sdk-tools-file-editing/settings
-2. Under "Trusted Publishers", add a new GitHub Actions publisher:
-   - Owner: `mdp`
-   - Repository: `ai-sdk-tools-file-editing`
-   - Workflow filename: `publish.yml`
-
-**To publish a new version:**
-
-```bash
-# Update version in package.json
-npm version patch  # or minor, or major
-
-# Push the tag to trigger publish
-git push --follow-tags
-```
-
-The GitHub Action will automatically build and publish to npm using OIDC authentication.
 
 ## License
 
