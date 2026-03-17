@@ -1,7 +1,7 @@
 {
-  "name": "@mdp/ai-sdk-tools-file-editing",
+  "name": "@mdp/ai-sdk-agent-tools",
   "version": "1.0.0",
-  "description": "Generic file editing tools for Vercel AI SDK v6 agents",
+  "description": "Comprehensive agent toolkit for Vercel AI SDK v6 — file editing, bash, glob, grep, web fetch, todo, and sub-agent tools",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -28,9 +28,16 @@
     "vercel",
     "ai",
     "tools",
-    "file-editing",
+    "agent",
     "agents",
-    "llm"
+    "llm",
+    "file-editing",
+    "bash",
+    "glob",
+    "grep",
+    "web-fetch",
+    "todo",
+    "sub-agent"
   ],
   "author": "",
   "license": "MIT",
@@ -39,12 +46,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mdp/ai-sdk-tools-file-editing"
+    "url": "https://github.com/mdp/ai-sdk-agent-tools"
   },
   "bugs": {
-    "url": "https://github.com/mdp/ai-sdk-tools-file-editing/issues"
+    "url": "https://github.com/mdp/ai-sdk-agent-tools/issues"
   },
-  "homepage": "https://github.com/mdp/ai-sdk-tools-file-editing#readme",
+  "homepage": "https://github.com/mdp/ai-sdk-agent-tools#readme",
+  "dependencies": {
+    "fast-glob": "^3.3.0"
+  },
   "peerDependencies": {
     "ai": "^6.0.0",
     "zod": "^3.22.0"

@@ -1,10 +1,14 @@
 /**
- * ai-sdk-tools-file-editing
+ * @mdp/ai-sdk-agent-tools
  *
- * Generic file editing tools for Vercel AI SDK v6 agents.
- * Provides read, write, edit, and multi-edit capabilities with fuzzy matching.
+ * Comprehensive agent toolkit for Vercel AI SDK v6.
+ * Provides file editing, filesystem, bash, web fetch, todo, and sub-agent tools.
  */
 
+// Combined factory
+export { createAgentTools } from "./create-agent-tools.js";
+
+// File editing tools
 export {
   createReadTool,
   createWriteTool,
@@ -12,16 +16,9 @@ export {
   createMultiEditTool,
   createFileEditTools,
   type FileEditToolsOptions,
-} from "./tools.js";
+} from "./file/tools.js";
 
-export {
-  replace,
-  levenshtein,
-  similarity,
-  REPLACERS,
-  type Replacer,
-} from "./replacers.js";
-
+// File state utilities
 export {
   recordRead,
   getReadTime,
@@ -29,4 +26,50 @@ export {
   assertFileNotModified,
   withFileLock,
   createDiff,
-} from "./file-state.js";
+} from "./file/file-state.js";
+
+// Replacer utilities
+export {
+  replace,
+  levenshtein,
+  similarity,
+  REPLACERS,
+  type Replacer,
+} from "./file/replacers.js";
+
+// Filesystem tools
+export {
+  createListTool,
+  createGlobTool,
+  createGrepTool,
+  createFsTools,
+} from "./fs/tools.js";
+
+// Bash tool
+export { createBashTool } from "./bash/tools.js";
+
+// Web fetch tool
+export { createWebFetchTool } from "./web/tools.js";
+
+// Todo tools
+export {
+  createTodoReadTool,
+  createTodoWriteTool,
+  createTodoTools,
+} from "./todo/tools.js";
+export { getTodos, setTodos, clearTodos, type TodoItem } from "./todo/state.js";
+
+// Task (sub-agent) tool
+export { createTaskTool } from "./task/tools.js";
+
+// Types
+export type {
+  BaseToolOptions,
+  SessionToolOptions,
+  BashToolOptions,
+  FsToolOptions,
+  WebFetchToolOptions,
+  TodoToolOptions,
+  TaskToolOptions,
+  AgentToolsOptions,
+} from "./types.js";
