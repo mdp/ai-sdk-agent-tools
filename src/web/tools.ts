@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { WebFetchToolOptions } from "../types.js";
 
 /**
@@ -18,7 +18,7 @@ Response body is truncated to ${Math.round(maxResponseSize / 1024)}KB.`,
     inputSchema: z.object({
       url: z.string().url().describe("The URL to fetch"),
       headers: z
-        .record(z.string())
+        .record(z.string(), z.string())
         .optional()
         .describe("Optional HTTP headers"),
     }),

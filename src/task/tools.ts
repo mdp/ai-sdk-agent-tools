@@ -1,5 +1,5 @@
 import { tool, generateText, stepCountIs, type Tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { TaskToolOptions } from "../types.js";
 
 /**

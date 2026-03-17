@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { FsToolOptions } from "../types.js";

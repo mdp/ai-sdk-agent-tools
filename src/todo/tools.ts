@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { getTodos, setTodos, type TodoItem } from "./state.js";
 import type { TodoToolOptions } from "../types.js";
 
